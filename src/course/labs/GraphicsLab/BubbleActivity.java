@@ -104,7 +104,7 @@ public class BubbleActivity extends Activity {
 		});
 		
 		// TODO - load the sound from res/raw/bubble_pop.wav
-		mSoundID = mSoundPool.load("res/raw/bubble_pop.wav", 1);
+		mSoundID = mSoundPool.load(this, R.raw.bubble_pop, 1);
 
 	}
 
@@ -137,11 +137,16 @@ public class BubbleActivity extends Activity {
 				// TODO - Implement onFling actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
-
-				
-				
-				
-				return false;
+				int n = mFrame.getChildCount();
+				while (n > 0) {
+					BubbleView b = (BubbleView) mFrame.getChildAt(n);
+					n--;
+					
+					if (b.intersects(event1.getX(), event1.getY())) {			
+							b.deflect(velocityX, velocityY);
+					}
+				}
+				return true;
 				
 			}
 
@@ -155,19 +160,24 @@ public class BubbleActivity extends Activity {
 				// TODO - Implement onSingleTapConfirmed actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
-
-
+				boolean remove = false;
+				int n = mFrame.getChildCount();
+				while (n > 0) {
+					n--;
+					BubbleView b = (BubbleView) mFrame.getChildAt(n);
+					if (b.intersects(event.getX(), event.getY())) {
+							
+							b.stop(true);
+							remove = true;
+					}
+				}
+				if (!remove) {
+					BubbleView b = new BubbleView(getApplicationContext(), event.getX(), event.getY());
+					mFrame.addView(b);
+				}
 				
 				
-				
-				
-				
-				
-				
-				
-				
-				
-				return false;
+				return true;
 			}
 		});
 	}
@@ -176,14 +186,14 @@ public class BubbleActivity extends Activity {
 	public boolean onTouchEvent(MotionEvent event) {
 
 		// TODO - delegate the touch to the gestureDetector 
-
+		log("onTouchEvent");
 		
 		
 		
 		
 		
 		
-		return false;
+		return mGestureDetector.onTouchEvent(event);
 	
 	}
 
@@ -247,7 +257,8 @@ public class BubbleActivity extends Activity {
 			if (speedMode == RANDOM) {
 				
 				// TODO - set rotation in range [1..3]
-				mDRotate = 0;
+				
+				mDRotate = r.nextInt(2) + 1;
 
 				
 			} else {
@@ -281,8 +292,8 @@ public class BubbleActivity extends Activity {
 				// TODO - Set movement direction and speed
 				// Limit movement speed in the x and y
 				// direction to [-3..3].
-
-
+				mDx = r.nextInt(6) - 3;
+				mDy = r.nextInt(6) - 3;
 			
 			
 			
@@ -300,12 +311,12 @@ public class BubbleActivity extends Activity {
 			} else {
 			
 				//TODO - set scaled bitmap size in range [1..3] * BITMAP_SIZE
-				mScaledBitmapWidth = 0;
+				mScaledBitmapWidth = r.nextInt(2) + 1;
 			
 			}
 
 			// TODO - create the scaled bitmap using size set above
-			mScaledBitmap = null;
+			mScaledBitmap = Bitmap.createBitmap(mScaledBitmapWidth, mScaledBitmapWidth, null);
 		}
 
 		// Start moving the BubbleView & updating the display
@@ -339,8 +350,8 @@ public class BubbleActivity extends Activity {
 		private synchronized boolean intersects(float x, float y) {
 
 			// TODO - Return true if the BubbleView intersects position (x,y)
-
-			return false;
+			
+			return ((x == this.getX()) && (y == this.getY()));
 		}
 
 		// Cancel the Bubble's movement
@@ -359,7 +370,7 @@ public class BubbleActivity extends Activity {
 						
 						// TODO - Remove the BubbleView from mFrame
 
-
+						//mFrame.removeView(this);
 						
 						
 						if (popped) {
@@ -384,8 +395,8 @@ public class BubbleActivity extends Activity {
 
 			//TODO - set mDx and mDy to be the new velocities divided by the REFRESH_RATE
 			
-			mDx = 0;
-			mDy = 0;
+			mDx = velocityX/REFRESH_RATE;
+			mDy = velocityY/REFRESH_RATE;
 
 		}
 
@@ -394,22 +405,22 @@ public class BubbleActivity extends Activity {
 		protected synchronized void onDraw(Canvas canvas) {
 
 			// TODO - save the canvas
-
+			canvas.save();
 
 			// TODO - increase the rotation of the original image by mDRotate
-
-
+			canvas.rotate(mDRotate);
+			
 			
 			// TODO Rotate the canvas by current rotation
 
 			
 			
 			// TODO - draw the bitmap at it's new location
-			
+			canvas.drawBitmap(mBitmap, getMatrix(), mPainter);
 
 			
 			// TODO - restore the canvas
-
+			canvas.restore();
 
 			
 		}
